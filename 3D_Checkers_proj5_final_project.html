@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!----------------------------------->
+<!-- Gregory Zacharko -->
+<!-- Intro to Computer Graphics -->
+<!-- Professor Rabbitz -->
+<!-- Spring 2022 Semester -->
+<!-- 5/4/2022 -->
+<!-- Project 5: Final Project -->
+<!----------------------------------->
+<html>
+<head>
+    <title>Project 5: Final Project</title>
+
+    <!-- GUI Components -->
+    <p> </p>
+    <button id="SweepUp">Sweep Up</button>
+    <button id="SweepDown">Sweep Down</button>
+    <button id="SweepRight">Sweep Right</button>
+    <button id="SweepLeft">Sweep Left</button>
+    <button id="DollyOut">Dolly Out</button>
+    <button id="DollyIn">Dolly In</button>
+    <p> </p>    <!-- Separates Components -->
+
+    <!-- Menu for Selecting Green Pieces -->
+    <select id="greenMenu" size="12">
+        <option value="0">Green Piece 1</option>
+        <option value="1">Green Piece 2</option>
+        <option value="2">Green Piece 3</option>
+        <option value="3">Green Piece 4</option>
+        <option value="4">Green Piece 5</option>
+        <option value="5">Green Piece 6</option>
+        <option value="6">Green Piece 7</option>
+        <option value="7">Green Piece 8</option>
+        <option value="8">Green Piece 9</option>
+        <option value="9">Green Piece 10</option>
+        <option value="10">Green Piece 11</option>
+        <option value="11">Green Piece 12</option>
+        <option value="12">Stop Movement</option>
+    </select>
+    <p> </p>    <!-- Separates Components -->
+
+    <!-- Menu for Selecting Red Pieces -->
+    <select id="redMenu" size="12">
+        <option value="0">Red Piece 1</option>
+        <option value="1">Red Piece 2</option>
+        <option value="2">Red Piece 3</option>
+        <option value="3">Red Piece 4</option>
+        <option value="4">Red Piece 5</option>
+        <option value="5">Red Piece 6</option>
+        <option value="6">Red Piece 7</option>
+        <option value="7">Red Piece 8</option>
+        <option value="8">Red Piece 9</option>
+        <option value="9">Red Piece 10</option>
+        <option value="10">Red Piece 11</option>
+        <option value="11">Red Piece 12</option>
+        <option value="12">Stop Movement</option>
+    </select>
+    <p> </p>    <!-- Separates Components -->
+    
+    <!-- Vertex Shader -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    #version 300 es
+
+    in vec3 vPosition;
+    in vec3 vNormal;
+    out vec4 fragColor;
+
+    uniform vec4 lightPosition;
+    uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+    uniform float shininess;
+
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
+    uniform mat4 invProjectionMatrix;
+    uniform mat4 normalMatrix;
+
+    void main()
+    {
+        // Blinn-Phong Illumination/Lighting with Phong Shading
+        vec4 P = modelViewMatrix * vec4(vPosition, 1.0);            // Vertex in Eye Coord. System
+        vec4 PL = modelViewMatrix * lightPosition;                  // Light Point in Eye Coord. System
+        vec4 E = invProjectionMatrix * vec4(0.0, 0.0, -1.0, 0.0);   // viewpoint in Clip Space
+        vec3 V = normalize(E.xyz * P.w - P.xyz * E.w);              // Map viewpoint from Clip Space to Eye Space
+        vec3 L = normalize((PL - P).xyz);                           // Point Light
+        vec3 H = normalize(L + V);                                  // Half Angle Vector
+        
+        vec3 N = normalize((normalMatrix * vec4(vNormal, 0.0)).xyz);    // Transform Vertex Normal Into Eye Coordinates
+        
+        // For Phong Shading
+        vec3 L1 = normalize(L);
+        vec3 N1 = normalize(N);
+        vec3 H1 = normalize(H);
+
+        // Compute Illumination Equation Terms
+        vec4 ambient = ambientProduct;
+
+        float Kd = max(dot(L1, N1), 0.0);
+        vec4 diffuse = Kd * diffuseProduct;
+    
+        float Ks = pow(max(dot(N1, H1), 0.0), shininess);
+        vec4 specular = Ks * specularProduct;
+    
+        if (dot(L1, N1) < 0.0) {
+           specular = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+        
+        fragColor = ambient + diffuse + specular;
+        fragColor.a = 1.0;
+
+        // Set gl_Position
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.0);
+    }
+    </script>
+
+    <!-- Fragment Shader -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+    #version 300 es
+    precision mediump float;
+
+    in vec4 fragColor;
+    out vec4 finalColor;
+
+    void main()
+    {
+        finalColor = fragColor;
+    }
+    </script>
+
+    <!-- JavaScript (JS) Files -->
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MVnew.js"></script>
+    <script type="text/javascript" src="cylinderData.js"></script>
+    <script type="text/javascript" src="cubeData.js"></script>
+    <script type="text/javascript" src="material.js"></script>
+    <script type="text/javascript" src="3D_Checkers_proj5_final_project.js"></script>
+</head>
+<body>
+    <canvas id="gl-canvas" width="1600" height="870">
+    Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+</body>
+</html>
